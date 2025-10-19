@@ -1,0 +1,28 @@
+unique
+------
+                              unsorted    sorted
+GreenEggsAndHam.txt             0.0073     0.004
+Macbeth.txt                     0.0420     0.007
+Genesis.txt                     0.0473     0.009
+HoundOfTheBaskervilles.txt      0.1277     0.009
+TheWarOfTheWorlds.txt           0.1573     0.009
+TreasureIsland.txt              0.1557     0.011
+TheSecretGarden.txt             0.1327     0.011
+TwentyThousandLeagues.txt       0.3307     0.026
+TheCountOfMonteCristo.txt       1.8243     0.026
+Bible.txt                       1.8727     0.037
+
+
+parity
+------
+                              unsorted    sorted
+GreenEggsAndHam.txt             0.0040     0.003
+Macbeth.txt                     0.1393     0.007
+Genesis.txt                     0.1677     0.009
+HoundOfTheBaskervilles.txt      0.6783     0.011
+TheWarOfTheWorlds.txt           0.7987     0.008
+TreasureIsland.txt              0.8153     0.011
+TheSecretGarden.txt             0.7617     0.011
+TwentyThousandLeagues.txt       2.0427     0.011
+TheCountOfMonteCristo.txt       16.972     0.028
+Bible.txt                       19.972     0.042
