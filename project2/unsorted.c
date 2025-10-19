@@ -7,7 +7,7 @@
  * Implementation of an unordered set of strings.
  *
  * Big O Time Complexities:
- * createSet: O(n)
+ * createSet: O(1)
  * destroySet: O(n)
  * numElements: O(1)
  * addElement: O(n) 
@@ -36,7 +36,7 @@ static int search(SET *sp, char *elt);
 
 /* createSet: allocate and initialize a new SET holding up to
  * maxElts elements.
- * Big O: O(n)
+ * Big O: O(1)
  */
 SET *createSet(int maxElts) {
 	SET *sp;

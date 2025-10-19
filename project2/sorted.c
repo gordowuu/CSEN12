@@ -8,14 +8,14 @@
  * Implementation of an ordered set of strings.
  *
  * Big O Time Complexities:
- * createSet: O(n)
+ * createSet: O(1)
  * destroySet: O(n)
  * numElements: O(1)
  * addElement: O(n) 
  * removeElement: O(n)
- * findElement: O(logn)
+ * findElement: O(log n)
  * getElements: O(n)
- * search: O(logn)
+ * search: O(log n)
  */
 
 #include <stdlib.h>
@@ -35,7 +35,7 @@ static int search(SET *sp, char *elt, bool *found);
 
 /* createSet: allocate and initialize a new SET holding up to
  * maxElts elements.
- * Big O: O(n)
+ * Big O: O(1)
  */
 SET *createSet(int maxElts) {
 	SET *sp;
@@ -106,7 +106,7 @@ void removeElement(SET *sp, char *elt) {
 
 /* findElement: return pointer to stored string equal to elt, or NULL if not
  * found.
- * Big O: O(n)
+ * Big O: O(log n)
  */
 char *findElement(SET *sp, char *elt) {
 	assert((sp != NULL) && (elt != NULL));
@@ -132,7 +132,7 @@ char **getElements(SET *sp) {
 
 
 /* private helper: returns the index of element in set or the index where you would insert it, found using binary search algorithm 
- * Big O: O(logn)
+ * Big O: O(log n)
  */
 static int search(SET *sp, char *elt, bool *found) {
 	assert(sp != NULL);
