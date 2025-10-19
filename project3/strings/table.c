@@ -58,6 +58,12 @@ SET *createSet(int maxElts) {
 	sp->data = malloc(sizeof(char*) * maxElts);
 	assert(sp->data != NULL);
 	sp->flags = malloc(sizeof(char) * maxElts);
+	assert(sp->flags != NULL);
+	for (int i = 0; i < maxElts; i++) {
+		sp->flags[i] = 'E';
+	}
+	return sp;
+}
 
 /* destroySet: free all strings owned by the set (marked as Filled),
  * the data and flags arrays, and the set structure.
