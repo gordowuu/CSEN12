@@ -57,7 +57,7 @@ SET *createSet(int maxElts) {
 	sp->length = maxElts;
 	sp->data = malloc(sizeof(char*) * maxElts);
 	assert(sp->data != NULL);
-	sp->flags = malloc(sizeof(char*) * maxElts);
+	sp->flags = malloc(sizeof(char) * maxElts);
 	assert(sp->flags != NULL);
 	for (int i = 0; i < maxElts; i++) {
 		sp->flags[i] = 'E';
