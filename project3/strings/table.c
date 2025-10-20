@@ -8,7 +8,7 @@
  * with linear probing. Elements are stored in an array with flags
  * indicating Empty, Filled, or Deleted states.
  *
- * Big O Time Complexities (Average Case):
+ * Big O Time Complexities:
  * createSet: O(m) - where m is maxElts
  * destroySet: O(m) 
  * numElements: O(1)
@@ -17,6 +17,7 @@
  * findElement: O(1) average, O(m) worst case
  * getElements: O(m) 
  * search: O(1) average, O(m) worst case
+ * strhash: O(n) - where n is the length of the string
  */
 
 #include <stdlib.h>
@@ -26,6 +27,10 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#define EMPTY 'E'
+#define FILLED 'F'
+#define DELETED 'D'
+
 typedef struct set {
 	size_t count;
 	size_t length;
@@ -33,6 +38,9 @@ typedef struct set {
     char *flags;
 } SET;
 
+/* strhash: compute hash value for a string using polynomial rolling hash.
+ * Big O: O(n) - where n is the length of the string
+ */
 unsigned strhash(char *s) {
 	unsigned hash = 0;
 	assert(s != NULL);
@@ -60,7 +68,7 @@ SET *createSet(int maxElts) {
 	sp->flags = malloc(sizeof(char) * maxElts);
 	assert(sp->flags != NULL);
 	for (int i = 0; i < maxElts; i++) {
-		sp->flags[i] = 'E';
+		sp->flags[i] = EMPTY;
 	}
 	return sp;
 }
@@ -72,7 +80,7 @@ SET *createSet(int maxElts) {
 void destroySet(SET *sp) {
 	assert(sp != NULL);
 	for (int i = 0; i < sp->length; i++) {
-		if (sp->flags[i] == 'F') {
+		if (sp->flags[i] == FILLED) {
 			free(sp->data[i]);
 		}
 	}
@@ -103,7 +111,7 @@ void addElement(SET *sp, char *elt) {
 		newElt = strdup(elt);
 		assert(newElt != NULL);
 		sp->data[idx] = newElt;
-		sp->flags[idx] = 'F';
+		sp->flags[idx] = FILLED;
 		sp->count++;
 	}
 }
@@ -118,7 +126,7 @@ void removeElement(SET *sp, char *elt) {
 	int idx = search(sp, elt, &found);
 	if (found) {
 		free(sp->data[idx]);
-		sp->flags[idx] = 'D';
+		sp->flags[idx] = DELETED;
 		sp->count--;
 	}
 }
@@ -148,7 +156,7 @@ char **getElements(SET *sp) {
 	assert(cpy != NULL);
 	int j = 0;
 	for (int i = 0; i < sp->length; i++) {
-		if (sp->flags[i] == 'F') {
+		if (sp->flags[i] == FILLED) {
 			cpy[j] = sp->data[i];
 			j++;
 		}
@@ -172,19 +180,19 @@ static int search(SET *sp, char *elt, bool *found) {
 	
 	while (i < sp->length) {
 		locn = (idx + i ) % sp->length;
-		if (sp->flags[locn] == 'D') {
+		if (sp->flags[locn] == DELETED) {
 			if (firstDeleted == -1) {
 				firstDeleted = locn;
 			}
 		}
-		else if (sp->flags[locn] == 'E') {
+		else if (sp->flags[locn] == EMPTY) {
 			*found = false;
 			if (firstDeleted == -1) {
 				return locn;
 			}
 			return firstDeleted;
 		}
-		else if (sp->flags[locn] == 'F') {
+		else if (sp->flags[locn] == FILLED) {
 			if (strcmp(sp->data[locn], elt) == 0) {
 				*found = true;
 				return locn;

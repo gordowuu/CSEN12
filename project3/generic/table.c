@@ -9,7 +9,7 @@
  * with flags indicating Empty, Filled, or Deleted states. Uses function
  * pointers for comparison and hashing to support any data type.
  *
- * Big O Time Complexities (Average Case):
+ * Big O Time Complexities:
  * createSet: O(m) - where m is maxElts
  * destroySet: O(1) 
  * numElements: O(1)
@@ -26,6 +26,10 @@
 #include <string.h>
 #include <assert.h>
 #include <stdbool.h>
+
+#define EMPTY 'E'
+#define FILLED 'F'
+#define DELETED 'D'
 
 typedef struct set {
 	size_t count;
@@ -57,7 +61,7 @@ SET *createSet(int maxElts, int (*compare)(), unsigned (*hash)()) {
 	sp->flags = malloc(sizeof(char) * maxElts);
 	assert(sp->flags != NULL);
 	for (int i = 0; i < maxElts; i++) {
-		sp->flags[i] = 'E';
+		sp->flags[i] = EMPTY;
 	}
 	return sp;
 }
@@ -93,7 +97,7 @@ void addElement(SET *sp, void *elt) {
 	if (!found) {
 		assert(sp->count < sp->length);
 		sp->data[idx] = elt;
-		sp->flags[idx] = 'F';
+		sp->flags[idx] = FILLED;
 		sp->count++;
 	}
 }
@@ -108,7 +112,7 @@ void removeElement(SET *sp, void *elt) {
 	bool found;
 	int idx = search(sp, elt, &found);
 	if (found) {
-		sp->flags[idx] = 'D';
+		sp->flags[idx] = DELETED;
 		sp->count--;
 	}
 }
@@ -138,7 +142,7 @@ void *getElements(SET *sp) {
 	assert(cpy != NULL);
 	int j = 0;
 	for (int i = 0; i < sp->length; i++) {
-		if (sp->flags[i] == 'F') {
+		if (sp->flags[i] == FILLED) {
 			cpy[j] = sp->data[i];
 			j++;
 		}
@@ -164,19 +168,19 @@ static int search(SET *sp, void *elt, bool *found) {
 	
 	while (i < sp->length) {
 		locn = (idx + i ) % sp->length;
-		if (sp->flags[locn] == 'D') {
+		if (sp->flags[locn] == DELETED) {
 			if (firstDeleted == -1) {
 				firstDeleted = locn;
 			}
 		}
-		else if (sp->flags[locn] == 'E') {
+		else if (sp->flags[locn] == EMPTY) {
 			*found = false;
 			if (firstDeleted == -1) {
 				return locn;
 			}
 			return firstDeleted;
 		}
-		else if (sp->flags[locn] == 'F') {
+		else if (sp->flags[locn] == FILLED) {
 			if ((*sp->compare)(sp->data[locn], elt) == 0) {
 				*found = true;
 				return locn;
