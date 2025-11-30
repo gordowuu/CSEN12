@@ -110,8 +110,7 @@ void *removeEntry(PQ *pq) {
     while (LEFT(idx) < pq->count) {
         child = LEFT(idx);
 
-        if (RIGHT(idx) < pq->count &&
-            pq->compare(pq->data[RIGHT(idx)], pq->data[LEFT(idx)]) < 0) {
+        if (RIGHT(idx) < pq->count && pq->compare(pq->data[RIGHT(idx)], pq->data[LEFT(idx)]) < 0) {
             child = RIGHT(idx);
         }
 

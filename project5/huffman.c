@@ -19,8 +19,7 @@
 #define NUM_CHARS 256
 #define EOF_MARKER 256
 
-/* mknode: create a new node with the given count. If left and right are not
- * NULL, they become children of the new node (their parent is set to new node).
+/* mknode: create a new node with the given count.
  */
 static struct node *mknode(int count, struct node *left, struct node *right) {
     struct node *np;
@@ -35,16 +34,14 @@ static struct node *mknode(int count, struct node *left, struct node *right) {
     return np;
 }
 
-/* nodecmp: comparison function for the priority queue. Compares two nodes
- * by their count values. Returns -1 if n1 < n2, 0 if equal, 1 if n1 > n2.
+/* nodecmp: comparison function for the priority queue.
  */
 static int nodecmp(struct node *n1, struct node *n2) {
     return (n1->count < n2->count) ? -1 : (n1->count > n2->count);
 }
 
 /* depth: calculate the depth of a node in the tree by counting the number
- * of edges from the node to the root. This equals the number of bits in the
- * Huffman code for that character.
+ * of edges from the node to the root.
  */
 static int depth(struct node *np) {
     int d = 0;
