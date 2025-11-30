@@ -112,11 +112,10 @@ int numItems(LIST *lp) {
 
 /* addFirst: add item as the first item in the list pointed to by lp.
  * If head node is full or doesn't exist, create new node.
- * Big O: O(1) amortized
+ * Big O: O(1) average
  */
 void addFirst(LIST *lp, void *item) {
     NODE *np;
-    int idx;
     assert(lp != NULL);
 
     /* If no head or head is full, create new node with double size */
@@ -141,7 +140,7 @@ void addFirst(LIST *lp, void *item) {
 
 /* addLast: add item as the last item in the list pointed to by lp.
  * If tail node is full or doesn't exist, create new node.
- * Big O: O(1) amortized
+ * Big O: O(1) average
  */
 void addLast(LIST *lp, void *item) {
     NODE *np;
@@ -170,7 +169,7 @@ void addLast(LIST *lp, void *item) {
 
 /* removeFirst: remove and return the first item in the list pointed to by lp.
  * If head node becomes empty, deallocate it.
- * Big O: O(1) amortized
+ * Big O: O(1) average
  */
 void *removeFirst(LIST *lp) {
     NODE *np;
@@ -211,7 +210,7 @@ void *removeFirst(LIST *lp) {
 
 /* removeLast: remove and return the last item in the list pointed to by lp.
  * If tail node becomes empty, deallocate it.
- * Big O: O(1) amortized
+ * Big O: O(1) average
  */
 void *removeLast(LIST *lp) {
     NODE *np;
