@@ -42,8 +42,7 @@ struct node {
 
 struct list {
     int count;          /* total number of items in list */
-    struct node *head;
-    struct node *tail;
+    struct node *head;  /* sentinel node */
 };
 
 typedef struct node NODE;
@@ -74,7 +73,7 @@ static void destroyNode(NODE *np) {
     free(np);
 }
 
-/* createList: allocate and initialize a new empty list.
+/* createList: allocate and initialize a new empty list with a sentinel node.
  * Big O: O(1)
  */
 LIST *createList(void) {
@@ -82,8 +81,9 @@ LIST *createList(void) {
     lp = malloc(sizeof(LIST));
     assert(lp != NULL);
     lp->count = 0;
-    lp->head = NULL;
-    lp->tail = NULL;
+    lp->head = createNode(INIT_LENGTH);
+    lp->head->next = lp->head;
+    lp->head->prev = lp->head;
     return lp;
 }
 
@@ -93,12 +93,13 @@ LIST *createList(void) {
 void destroyList(LIST *lp) {
     NODE *np, *next;
     assert(lp != NULL);
-    np = lp->head;
-    while (np != NULL) {
+    np = lp->head->next;
+    while (np != lp->head) {
         next = np->next;
         destroyNode(np);
         np = next;
     }
+    destroyNode(lp->head);
     free(lp);
 }
 
@@ -111,27 +112,26 @@ int numItems(LIST *lp) {
 }
 
 /* addFirst: add item as the first item in the list pointed to by lp.
- * If head node is full or doesn't exist, create new node.
- * Big O: O(1) average
+ * If first node is full or list is empty, create new node.
+ * Big O: O(1) amortized
  */
 void addFirst(LIST *lp, void *item) {
     NODE *np;
     assert(lp != NULL);
 
-    /* If no head or head is full, create new node with double size */
-    if (lp->head == NULL || lp->head->count == lp->head->length) {
-        int newLen = (lp->head == NULL) ? INIT_LENGTH : lp->head->length * 2;
-        np = createNode(newLen);
-        np->next = lp->head;
-        if (lp->head != NULL)
-            lp->head->prev = np;
-        lp->head = np;
-        if (lp->tail == NULL)
-            lp->tail = np;
+    np = lp->head->next;
+    /* If list empty or first node full, create new node */
+    if (np == lp->head || np->count == np->length) {
+        int newLen = (np == lp->head) ? INIT_LENGTH : np->length * 2;
+        NODE *newNode = createNode(newLen);
+        newNode->prev = lp->head;
+        newNode->next = lp->head->next;
+        lp->head->next->prev = newNode;
+        lp->head->next = newNode;
+        np = newNode;
     }
 
-    /* Add to front of circular queue in head node */
-    np = lp->head;
+    /* Add to front of circular queue in first node */
     np->first = (np->first - 1 + np->length) % np->length;
     np->data[np->first] = item;
     np->count++;
@@ -139,28 +139,27 @@ void addFirst(LIST *lp, void *item) {
 }
 
 /* addLast: add item as the last item in the list pointed to by lp.
- * If tail node is full or doesn't exist, create new node.
- * Big O: O(1) average
+ * If last node is full or list is empty, create new node.
+ * Big O: O(1) amortized
  */
 void addLast(LIST *lp, void *item) {
     NODE *np;
     int idx;
     assert(lp != NULL);
 
-    /* If no tail or tail is full, create new node */
-    if (lp->tail == NULL || lp->tail->count == lp->tail->length) {
-        int newLen = (lp->tail == NULL) ? INIT_LENGTH : lp->tail->length * 2;
-        np = createNode(newLen);
-        np->prev = lp->tail;
-        if (lp->tail != NULL)
-            lp->tail->next = np;
-        lp->tail = np;
-        if (lp->head == NULL)
-            lp->head = np;
+    np = lp->head->prev;
+    /* If list empty or last node full, create new node */
+    if (np == lp->head || np->count == np->length) {
+        int newLen = (np == lp->head) ? INIT_LENGTH : np->length * 2;
+        NODE *newNode = createNode(newLen);
+        newNode->next = lp->head;
+        newNode->prev = lp->head->prev;
+        lp->head->prev->next = newNode;
+        lp->head->prev = newNode;
+        np = newNode;
     }
 
-    /* Add to back of circular queue in tail node */
-    np = lp->tail;
+    /* Add to back of circular queue in last node */
     idx = (np->first + np->count) % np->length;
     np->data[idx] = item;
     np->count++;
@@ -168,25 +167,23 @@ void addLast(LIST *lp, void *item) {
 }
 
 /* removeFirst: remove and return the first item in the list pointed to by lp.
- * If head node becomes empty, deallocate it.
- * Big O: O(1) average
+ * If first node becomes empty, deallocate it.
+ * Big O: O(1) amortized
  */
 void *removeFirst(LIST *lp) {
     NODE *np;
     void *item;
     assert(lp != NULL && lp->count > 0);
 
-    np = lp->head;
+    np = lp->head->next;
 
-    /* If head is empty, move to next node and deallocate empty head */
+    /* If first node is empty, remove it and move to next */
     while (np->count == 0) {
-        lp->head = np->next;
-        if (lp->head != NULL)
-            lp->head->prev = NULL;
-        else
-            lp->tail = NULL;
-        destroyNode(np);
-        np = lp->head;
+        NODE *pDel = np;
+        np = np->next;
+        pDel->prev->next = pDel->next;
+        pDel->next->prev = pDel->prev;
+        destroyNode(pDel);
     }
 
     /* Remove from front of circular queue */
@@ -195,13 +192,10 @@ void *removeFirst(LIST *lp) {
     np->count--;
     lp->count--;
 
-    /* If node is now empty and not the only node, deallocate it */
-    if (np->count == 0 && lp->head != lp->tail) {
-        lp->head = np->next;
-        if (lp->head != NULL)
-            lp->head->prev = NULL;
-        else
-            lp->tail = NULL;
+    /* If node is now empty, deallocate it */
+    if (np->count == 0) {
+        np->prev->next = np->next;
+        np->next->prev = np->prev;
         destroyNode(np);
     }
 
@@ -209,8 +203,8 @@ void *removeFirst(LIST *lp) {
 }
 
 /* removeLast: remove and return the last item in the list pointed to by lp.
- * If tail node becomes empty, deallocate it.
- * Big O: O(1) average
+ * If last node becomes empty, deallocate it.
+ * Big O: O(1) amortized
  */
 void *removeLast(LIST *lp) {
     NODE *np;
@@ -218,17 +212,15 @@ void *removeLast(LIST *lp) {
     int idx;
     assert(lp != NULL && lp->count > 0);
 
-    np = lp->tail;
+    np = lp->head->prev;
 
-    /* If tail is empty, move to prev node and deallocate empty tail */
+    /* If last node is empty, remove it and move to prev */
     while (np->count == 0) {
-        lp->tail = np->prev;
-        if (lp->tail != NULL)
-            lp->tail->next = NULL;
-        else
-            lp->head = NULL;
-        destroyNode(np);
-        np = lp->tail;
+        NODE *pDel = np;
+        np = np->prev;
+        pDel->prev->next = pDel->next;
+        pDel->next->prev = pDel->prev;
+        destroyNode(pDel);
     }
 
     /* Remove from back of circular queue */
@@ -237,13 +229,10 @@ void *removeLast(LIST *lp) {
     np->count--;
     lp->count--;
 
-    /* If node is now empty and not the only node, deallocate it */
-    if (np->count == 0 && lp->head != lp->tail) {
-        lp->tail = np->prev;
-        if (lp->tail != NULL)
-            lp->tail->next = NULL;
-        else
-            lp->head = NULL;
+    /* If node is now empty, deallocate it */
+    if (np->count == 0) {
+        np->prev->next = np->next;
+        np->next->prev = np->prev;
         destroyNode(np);
     }
 
@@ -256,7 +245,7 @@ void *removeLast(LIST *lp) {
 void *getFirst(LIST *lp) {
     NODE *np;
     assert(lp != NULL && lp->count > 0);
-    np = lp->head;
+    np = lp->head->next;
     while (np->count == 0)
         np = np->next;
     return np->data[np->first];
@@ -269,7 +258,7 @@ void *getLast(LIST *lp) {
     NODE *np;
     int idx;
     assert(lp != NULL && lp->count > 0);
-    np = lp->tail;
+    np = lp->head->prev;
     while (np->count == 0)
         np = np->prev;
     idx = (np->first + np->count - 1 + np->length) % np->length;
@@ -287,7 +276,7 @@ void *getItem(LIST *lp, int index) {
 
     /* Search from head (front to back) */
     if (index < lp->count / 2) {
-        np = lp->head;
+        np = lp->head->next;
         pos = 0;
         while (pos + np->count <= index) {
             pos += np->count;
@@ -296,7 +285,7 @@ void *getItem(LIST *lp, int index) {
         idx = (np->first + (index - pos)) % np->length;
     } else {
         /* Search from tail (back to front) */
-        np = lp->tail;
+        np = lp->head->prev;
         pos = lp->count;
         while (pos - np->count > index) {
             pos -= np->count;
@@ -318,7 +307,7 @@ void setItem(LIST *lp, int index, void *item) {
 
     /* Search from head (front to back) */
     if (index < lp->count / 2) {
-        np = lp->head;
+        np = lp->head->next;
         pos = 0;
         while (pos + np->count <= index) {
             pos += np->count;
@@ -327,7 +316,7 @@ void setItem(LIST *lp, int index, void *item) {
         idx = (np->first + (index - pos)) % np->length;
     } else {
         /* Search from tail (back to front) */
-        np = lp->tail;
+        np = lp->head->prev;
         pos = lp->count;
         while (pos - np->count > index) {
             pos -= np->count;
